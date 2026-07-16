@@ -1297,6 +1297,7 @@ dependencies = [
  "ferray-fft",
  "ferray-test-oracle",
  "half",
+ "libm",
  "num-complex",
  "num-traits",
  "proptest",
