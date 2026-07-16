@@ -16,6 +16,13 @@ ferray-core = { workspace = true }
 ferray-linalg = { workspace = true }
 rayon = { workspace = true }
 # rand_core was listed but never imported (#260); removed.
+
+# getrandom provides the system RNG backend.
+# On wasm32 we must opt into the `wasm_js` feature for Crypto.getRandomValues().
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.4", features = ["wasm_js"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 getrandom = { workspace = true }
 
 [dev-dependencies]

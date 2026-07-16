@@ -553,16 +553,18 @@ pub(crate) fn matmul_raw<T: LinalgFloat>(a: &[T], b: &[T], m: usize, k: usize, n
     let mut result = vec![zero; m * n];
     let c_mut = faer::MatMut::from_row_major_slice_mut(&mut result, m, n);
 
-    // Faer parallelism is gated on `FAER_USE_RAYON` (see the const for
-    // why it's currently disabled). When re-enabled, we'd auto-detect
-    // global rayon threads via `Par::rayon(0)` — the previous
-    // `NonZeroUsize::new(0).unwrap_or(…)` always collapsed to a single
-    // thread, effectively running the "parallel" branch sequentially (#191).
-    let par = if FAER_USE_RAYON {
-        faer::Par::rayon(0)
-    } else {
-        faer::Par::Seq
-    };
+    // Faer parallelism is gated on `FAER_USE_RAYON` (currently false —
+    // faer's `Par::rayon(0)` is a regression vs `Par::Seq`). The
+    // `Par::rayon` variant only exists when faer is built with its
+    // `rayon` feature (native targets, not wasm32).
+    #[allow(unused_mut)]
+    let mut par = faer::Par::Seq;
+    if FAER_USE_RAYON {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            par = faer::Par::rayon(0);
+        }
+    }
 
     faer::linalg::matmul::matmul(
         c_mut,

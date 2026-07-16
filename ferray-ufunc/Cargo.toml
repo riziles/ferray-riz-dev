@@ -17,7 +17,14 @@ pulp = { workspace = true }
 num-complex = { workspace = true }
 num-traits = { workspace = true }
 rayon = { workspace = true }
+# CORE-MATH provides correctly-rounded transcendentals for native targets.
+# On wasm32, core-math-sys → bindgen → libclang does not resolve, so we
+# swap in the pure-Rust `libm` crate instead (see cr_math.rs).
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 core-math = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+libm = { workspace = true }
 
 [dependencies.half]
 workspace = true

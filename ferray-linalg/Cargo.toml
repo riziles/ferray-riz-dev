@@ -14,7 +14,6 @@ description = "Linear algebra operations (decompositions, solvers, einsum) for f
 [dependencies]
 ferray-core = { workspace = true }
 ferray-ufunc = { workspace = true }
-faer = { workspace = true }
 faer-traits = { workspace = true }
 rayon = { workspace = true }
 num-traits = { workspace = true }
@@ -73,6 +72,25 @@ avxvnni = []
 # libopenblas-dev / equivalent on the host); for vendored static linking
 # pass `--features openblas-src/static` separately.
 openblas = ["dep:openblas-src", "dep:cblas-sys"]
+
+# WASM: getrandom needs the `wasm_js` feature for wasm32-unknown-unknown.
+# faer → rand → rand_core → getrandom; this ensures the `js` backend
+# is available so RNG-based linalg routines (e.g. randomised SVD)
+# compile on the browser target.
+#
+# We also drop faer's default features (which include `rayon` → `spindle`;
+# `spindle`/`atomic-wait` has no wasm32 target) and enable only `std` +
+# `linalg`. The linalg code already handles `Par::Seq` as a fallback.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+# faer with default-features = false to avoid rayon → spindle → atomic-wait
+# (which has no wasm32 target). Enable only std + linalg; the code already
+# handles Par::Seq as a fallback for single-threaded execution.
+faer = { version = "0.24", default-features = false, features = ["std", "linalg"] }
+
+# Native targets: faer with default features (includes rayon parallelism).
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+faer = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }

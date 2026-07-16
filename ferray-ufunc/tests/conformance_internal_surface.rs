@@ -33,7 +33,11 @@ fn assert_f32_close(actual: &[f32], expected: &[f32], name: &str) {
 
 /// Path anchors:
 /// `ferray_ufunc::cr_math::CrMath`.
+///
+/// This test uses `core_math` directly (not via the `CrMath` trait), so it
+/// only compiles on native targets (not wasm32).
 #[test]
+#[cfg(not(target_arch = "wasm32"))]
 fn cr_math_trait_matches_scalar_reference_for_basic_values() {
     use ferray_ufunc::cr_math::CrMath;
 
