@@ -58,7 +58,15 @@ num-traits = "0.2"
 half = "2.7"
 thiserror = "2.0"
 serde = { version = "1.0", features = ["derive"] }
-pulp = { version = "0.22", features = ["x86-v3"] }
+# `default-features = false` drops pulp's `relaxed-simd` feature, which the
+# default set enables. The relaxed-SIMD kernels are compiled with
+# `#[target_feature(enable = "relaxed-simd")]`, so merely having the feature on
+# puts those instructions in the binary — and a WebAssembly module containing
+# one is rejected *at validation time* by any engine without support, before a
+# single instruction runs. WebKit (all iOS browsers, including Chrome on iOS)
+# does not support relaxed SIMD yet, so the whole module failed to load there.
+# `std` and `x86-v3` are pulp defaults too and must be named back explicitly.
+pulp = { version = "0.22", default-features = false, features = ["std", "x86-v3"] }
 rayon = "1.12"
 faer = "0.24"
 faer-traits = "0.24"
